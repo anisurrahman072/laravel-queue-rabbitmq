@@ -526,7 +526,7 @@ class RabbitMQQueue extends Queue implements QueueContract
         $header = $job->getRabbitMQMessageHeaders();
 
         $enableRetryLimit = config('queue.connections.rabbitmq.options.queue.enable_retry_limit');
-        $retryLimit = config('queue.connections.rabbitmq.options.queue.dlx_x_death_limit');
+        $retryLimit = config('queue.connections.rabbitmq.options.queue.retry_limit');
 
         /**
          * If used RETRY mechanism by using DLX, DLQ and x_message_ttl, then execute IF block to limit retry,
