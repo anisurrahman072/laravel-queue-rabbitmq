@@ -523,7 +523,20 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     public function reject(RabbitMQJob $job, bool $requeue = false): void
     {
-        $this->channel->basic_reject($job->getRabbitMQMessage()->getDeliveryTag(), $requeue);
+        $header = $job->getRabbitMQMessageHeaders();
+
+        $enableRetryLimit = config('rabbitmq.options.queue.enable_retry_limit');
+        $retryLimit = config('rabbitmq.options.queue.dlx_x_death_limit');
+
+        /**
+         * If used RETRY mechanism by using DLX, DLQ and x_message_ttl, then execute IF block to limit retry,
+         * Otherwise execute ELSE block
+        */
+        if($header && !empty($header['x-death']) && !empty($header['x-death'][0]['count']) && $enableRetryLimit === true && count($header['x-death'][0]['count']) > $retryLimit){
+            $this->ack($job);
+        } else {
+            $this->channel->basic_reject($job->getRabbitMQMessage()->getDeliveryTag(), $requeue);
+        }
     }
 
     /**
@@ -532,7 +545,6 @@ class RabbitMQQueue extends Queue implements QueueContract
      * @param $payload
      * @param int $attempts
      * @return array
-     * @throws JsonException
      */
     protected function createMessage($payload, int $attempts = 0): array
     {
