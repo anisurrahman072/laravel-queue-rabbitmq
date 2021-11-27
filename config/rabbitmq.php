@@ -35,9 +35,9 @@ return [
             /**
              * Set retry limit for RETRY_MECHANISM by using DLX, DLQ and x_message_ttl
              */
-            'enable_retry_limit' => env('ENABLE_RETRY_LIMIT', false),
-            'dlx_x_death_limit' => env('DLX_X_DEATH_LIMIT', 5),
-            'error_exchange_name' => env('ERROR_EXCHANGE_NAME', 'error.exchange')
+            'enable_retry_limit' => env('RABBITMQ_ENABLE_RETRY_LIMIT', false),
+            'dlx_x_death_limit' => env('RABBITMQ_DLX_X_DEATH_LIMIT', 5),
+            'error_exchange_name' => env('RABBITMQ_ERROR_EXCHANGE_NAME', 'error.exchange')
         ],
     ],
 
