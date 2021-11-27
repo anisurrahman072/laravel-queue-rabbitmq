@@ -534,6 +534,10 @@ class RabbitMQQueue extends Queue implements QueueContract
         */
         if($header && !empty($header['x-death']) && !empty($header['x-death'][0]['count']) && $enableRetryLimit === true && count($header['x-death'][0]['count']) > $retryLimit){
             $this->ack($job);
+
+            /** Publish the message into ERROR exchange */
+            $errorExchangeName = config('rabbitmq.options.queue.error_exchange_name');
+            $this->channel->basic_publish($job->getRabbitMQMessage(), $errorExchangeName, '', true, false);
         } else {
             $this->channel->basic_reject($job->getRabbitMQMessage()->getDeliveryTag(), $requeue);
         }
