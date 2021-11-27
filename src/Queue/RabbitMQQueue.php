@@ -525,18 +525,18 @@ class RabbitMQQueue extends Queue implements QueueContract
     {
         $header = $job->getRabbitMQMessageHeaders();
 
-        $enableRetryLimit = config('rabbitmq.options.queue.enable_retry_limit');
-        $retryLimit = config('rabbitmq.options.queue.dlx_x_death_limit');
+        $enableRetryLimit = config('queue.connections.rabbitmq.options.queue.enable_retry_limit');
+        $retryLimit = config('queue.connections.rabbitmq.options.queue.dlx_x_death_limit');
 
         /**
          * If used RETRY mechanism by using DLX, DLQ and x_message_ttl, then execute IF block to limit retry,
-         * Otherwise execute ELSE block
-        */
-        if($header && !empty($header['x-death']) && !empty($header['x-death'][0]['count']) && $enableRetryLimit === true && count($header['x-death'][0]['count']) > $retryLimit){
+         * Otherwise execute ELSE block to drop message from Queue
+         */
+        if($header && !empty($header['x-death']) && !empty($header['x-death'][0]['count']) && $enableRetryLimit === true && $header['x-death'][0]['count'] >= $retryLimit){
             $this->ack($job);
 
             /** Publish the message into ERROR exchange */
-            $errorExchangeName = config('rabbitmq.options.queue.error_exchange_name');
+            $errorExchangeName = config('queue.connections.rabbitmq.options.queue.error_exchange_name');
             $this->channel->basic_publish($job->getRabbitMQMessage(), $errorExchangeName, '', true, false);
         } else {
             $this->channel->basic_reject($job->getRabbitMQMessage()->getDeliveryTag(), $requeue);
