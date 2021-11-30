@@ -709,7 +709,7 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     protected function getExchange(string $exchange = null): ?string
     {
-        return $exchange ?: Arr::get($this->options, 'exchange') ?: null;
+        return Arr::get(config('queue.connections.rabbitmq.options.queue'), 'exchange');
     }
 
     /**
@@ -721,7 +721,7 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     protected function getRoutingKey(string $destination): string
     {
-        return ltrim(sprintf(Arr::get($this->options, 'exchange_routing_key') ?: '%s', $destination), '.');
+        return Arr::get(config('queue.connections.rabbitmq.options.queue'), 'exchange_routing_key');
     }
 
     /**
@@ -732,10 +732,7 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     protected function getExchangeType(?string $type = null): string
     {
-        return @constant(AMQPExchangeType::class.'::'.Str::upper($type ?: Arr::get(
-            $this->options,
-            'exchange_type'
-        ) ?: 'direct')) ?: AMQPExchangeType::DIRECT;
+        return Arr::get(config('queue.connections.rabbitmq.options.queue'), 'exchange_type');
     }
 
     /**
