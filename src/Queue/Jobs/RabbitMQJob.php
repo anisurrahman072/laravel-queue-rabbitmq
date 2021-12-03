@@ -2,6 +2,7 @@
 
 namespace VladimirYuldashev\LaravelQueueRabbitMQ\Queue\Jobs;
 
+use VladimirYuldashev\LaravelQueueRabbitMQ\Helpers\RabbitMQ;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Queue\Job as JobContract;
@@ -49,6 +50,9 @@ class RabbitMQJob extends Job implements JobContract
         $this->connectionName = $connectionName;
         $this->queue = $queue;
         $this->decoded = $this->payload();
+
+        $rabbitMq = app(RabbitMQ::class);
+        $rabbitMq->setRabbitMqJob($this);
     }
 
     /**
