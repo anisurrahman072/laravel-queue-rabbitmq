@@ -1,5 +1,5 @@
 {
-  "name": "anis/lumen-queue-rabbitmq",
+  "name": "anis072/lumen-queue-rabbitmq",
   "description": "RabbitMQ driver for Laravel Queue. Supports Laravel Horizon.",
   "license": "MIT",
   "authors": [
