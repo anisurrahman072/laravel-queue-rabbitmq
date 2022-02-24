@@ -21,7 +21,7 @@ Only the latest version will get new features. Bug fixes will be provided using 
 You can install this package via composer using this command:
 
 ```
-composer require vladimir-yuldashev/laravel-queue-rabbitmq
+composer require anis/laravel-queue-rabbitmq
 ```
 
 The package will automatically register itself.
