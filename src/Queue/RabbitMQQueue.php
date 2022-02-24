@@ -523,7 +523,24 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     public function reject(RabbitMQJob $job, bool $requeue = false): void
     {
-        $this->channel->basic_reject($job->getRabbitMQMessage()->getDeliveryTag(), $requeue);
+        $header = $job->getRabbitMQMessageHeaders();
+
+        $enableRetryLimit = config('queue.connections.rabbitmq.options.queue.enable_retry_limit');
+        $retryLimit = config('queue.connections.rabbitmq.options.queue.retry_limit');
+
+        /**
+         * If used RETRY mechanism by using DLX, DLQ and x_message_ttl, then execute IF block to limit retry,
+         * Otherwise execute ELSE block to drop message from Queue
+         */
+        if($header && !empty($header['x-death']) && !empty($header['x-death'][0]['count']) && $enableRetryLimit === true && $header['x-death'][0]['count'] >= $retryLimit){
+            $this->ack($job);
+
+            /** Publish the message into ERROR exchange */
+            $errorExchangeName = config('queue.connections.rabbitmq.options.queue.error_exchange_name');
+            $this->channel->basic_publish($job->getRabbitMQMessage(), $errorExchangeName, '', true, false);
+        } else {
+            $this->channel->basic_reject($job->getRabbitMQMessage()->getDeliveryTag(), $requeue);
+        }
     }
 
     /**
@@ -532,7 +549,6 @@ class RabbitMQQueue extends Queue implements QueueContract
      * @param $payload
      * @param int $attempts
      * @return array
-     * @throws JsonException
      */
     protected function createMessage($payload, int $attempts = 0): array
     {
@@ -693,7 +709,7 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     protected function getExchange(string $exchange = null): ?string
     {
-        return $exchange ?: Arr::get($this->options, 'exchange') ?: null;
+        return Arr::get(config('queue.connections.rabbitmq.options.queue'), 'exchange');
     }
 
     /**
@@ -705,7 +721,7 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     protected function getRoutingKey(string $destination): string
     {
-        return ltrim(sprintf(Arr::get($this->options, 'exchange_routing_key') ?: '%s', $destination), '.');
+        return Arr::get(config('queue.connections.rabbitmq.options.queue'), 'exchange_routing_key');
     }
 
     /**
@@ -716,10 +732,7 @@ class RabbitMQQueue extends Queue implements QueueContract
      */
     protected function getExchangeType(?string $type = null): string
     {
-        return @constant(AMQPExchangeType::class.'::'.Str::upper($type ?: Arr::get(
-            $this->options,
-            'exchange_type'
-        ) ?: 'direct')) ?: AMQPExchangeType::DIRECT;
+        return Arr::get(config('queue.connections.rabbitmq.options.queue'), 'exchange_type');
     }
 
     /**

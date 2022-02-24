@@ -6,6 +6,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\ServiceProvider;
 use VladimirYuldashev\LaravelQueueRabbitMQ\Console\ConsumeCommand;
+use VladimirYuldashev\LaravelQueueRabbitMQ\Helpers\RabbitMQ;
 use VladimirYuldashev\LaravelQueueRabbitMQ\Queue\Connectors\RabbitMQConnector;
 
 class LaravelQueueRabbitMQServiceProvider extends ServiceProvider
@@ -56,6 +57,10 @@ class LaravelQueueRabbitMQServiceProvider extends ServiceProvider
             Console\QueueDeleteCommand::class,
             Console\QueuePurgeCommand::class,
         ]);
+
+        $this->app->singleton( RabbitMQ::class, function() {
+            return new RabbitMQ();
+        });
     }
 
     /**

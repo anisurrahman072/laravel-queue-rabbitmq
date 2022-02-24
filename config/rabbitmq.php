@@ -31,6 +31,13 @@ return [
         ],
         'queue' => [
             'job' => VladimirYuldashev\LaravelQueueRabbitMQ\Queue\Jobs\RabbitMQJob::class,
+
+            /**
+             * Set retry limit for RETRY_MECHANISM by using DLX, DLQ and x_message_ttl
+             */
+            'enable_retry_limit' => env('RABBITMQ_ENABLE_RETRY_LIMIT', false),
+            'retry_limit' => env('RABBITMQ_RETRY_LIMIT', 5),
+            'error_exchange_name' => env('RABBITMQ_ERROR_EXCHANGE_NAME', 'error.exchange')
         ],
     ],
 
